@@ -40,11 +40,11 @@ class MainActivity : AppCompatActivity() {
             override fun onComplete() = Unit
         }
 
-        compositeDisposable.add(disposableObserver)
-
-        observable.subscribeOn(Schedulers.io())
-        observable.observeOn(AndroidSchedulers.mainThread())
-        observable.subscribe(disposableObserver)
+        compositeDisposable.add(
+            observable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(disposableObserver)
+        )
 
         disposableObserver2 = object : DisposableObserver<String>() {
             override fun onNext(str: String?) {
@@ -55,8 +55,9 @@ class MainActivity : AppCompatActivity() {
 
             override fun onComplete() = Unit
         }
-        compositeDisposable.add(disposableObserver2)
-        observable.subscribe(disposableObserver2)
+        compositeDisposable.add(
+            observable.subscribeWith(disposableObserver2)
+        )
     }
 
     override fun onDestroy() {
