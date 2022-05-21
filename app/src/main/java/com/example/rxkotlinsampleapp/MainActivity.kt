@@ -15,9 +15,13 @@ class MainActivity : AppCompatActivity() {
 
     private val helloWorld = "Hello World in RxKotlin"
     private lateinit var observable: Observable<String>
+    
     private lateinit var observer: Observer<String>
     private lateinit var disposable: Disposable
-
+    
+    private lateinit var observer2: Observer<String>
+    private lateinit var disposable2: Disposable
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -45,12 +49,35 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "onComplete: ")
             }
         }
+
+        observer2 = object : Observer<String> {
+            override fun onSubscribe(d: Disposable?) {
+                Log.d(TAG, "onSubscribe2: $d")
+                d?.let {
+                    disposable2 = it
+                }
+            }
+
+            override fun onNext(str: String?) {
+                Log.d(TAG, "onNext2: ")
+                binding.textView.text = str
+            }
+
+            override fun onError(e: Throwable?) {
+                Log.d(TAG, "onError2: $e")
+            }
+
+            override fun onComplete() {
+                Log.d(TAG, "onComplete2: ")
+            }
+        }
         observable.subscribe(observer)
+        observable.subscribe(observer2)
     }
 
     override fun onDestroy() {
-        Log.d(TAG, "onDestroy: ")
         disposable.dispose()
+        disposable2.dispose()
         super.onDestroy()
     }
 }
