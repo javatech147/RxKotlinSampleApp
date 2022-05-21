@@ -39,4 +39,9 @@ class MainActivity : AppCompatActivity() {
         }
         observable.subscribe(disposableObserver)
     }
+
+    override fun onDestroy() {
+        disposableObserver.dispose()
+        super.onDestroy()
+    }
 }
