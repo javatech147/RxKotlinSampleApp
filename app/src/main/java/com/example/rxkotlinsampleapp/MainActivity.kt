@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rxkotlinsampleapp.databinding.ActivityMainBinding
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableObserver
 
 class MainActivity : AppCompatActivity() {
@@ -16,6 +17,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var observable: Observable<String>
 
     private lateinit var disposableObserver: DisposableObserver<String>
+    private lateinit var disposableObserver2: DisposableObserver<String>
+
+    private val compositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,19 +33,28 @@ class MainActivity : AppCompatActivity() {
                 binding.textView.text = str
             }
 
-            override fun onError(e: Throwable?) {
-                Log.d(TAG, "onError: $e")
+            override fun onError(e: Throwable?) = Unit
+
+            override fun onComplete() = Unit
+        }
+        compositeDisposable.add(disposableObserver)
+        observable.subscribe(disposableObserver)
+
+        disposableObserver2 = object : DisposableObserver<String>() {
+            override fun onNext(str: String?) {
+                binding.textView.text = str
             }
 
-            override fun onComplete() {
-                Log.d(TAG, "onComplete: ")
-            }
+            override fun onError(e: Throwable?) = Unit
+
+            override fun onComplete() = Unit
         }
-        observable.subscribe(disposableObserver)
+        compositeDisposable.add(disposableObserver2)
+        observable.subscribe(disposableObserver2)
     }
 
     override fun onDestroy() {
-        disposableObserver.dispose()
+        compositeDisposable.clear()
         super.onDestroy()
     }
 }
