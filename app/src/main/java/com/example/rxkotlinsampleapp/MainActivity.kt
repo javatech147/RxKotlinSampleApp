@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rxkotlinsampleapp.databinding.ActivityMainBinding
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableObserver
+import io.reactivex.rxjava3.schedulers.Schedulers
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,7 +39,11 @@ class MainActivity : AppCompatActivity() {
 
             override fun onComplete() = Unit
         }
+
         compositeDisposable.add(disposableObserver)
+
+        observable.subscribeOn(Schedulers.io())
+        observable.observeOn(AndroidSchedulers.mainThread())
         observable.subscribe(disposableObserver)
 
         disposableObserver2 = object : DisposableObserver<String>() {
