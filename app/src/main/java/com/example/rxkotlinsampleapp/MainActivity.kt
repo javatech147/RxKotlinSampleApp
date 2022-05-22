@@ -11,17 +11,16 @@ import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 /*
-* fromArray() operators will work only with array type, not on list type.
-*       private val greetings = arrayOf("Hello A", "Hello B", "Hello C")
-*       ...
-*       observable = Observable.fromArray(*greetings)
+* fromIterable() operators will work on list type.
+* It will emit list items one by one.
+*     private val greetings = arrayListOf("Hello A", "Hello B", "Hello C")
+*     ...
+*     observable = Observable.fromIterable(greetings)
 *
 * Log Output -
 * D/MainActivity: onNext: Hello A
 * D/MainActivity: onNext: Hello B
 * D/MainActivity: onNext: Hello C
-*
-* Note - If you data is of List<T> type, then use fromIterable() operator to emit one by one items from the list.
 * */
 
 class MainActivity : AppCompatActivity() {
@@ -29,7 +28,7 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
     private lateinit var binding: ActivityMainBinding
 
-    private val greetings = arrayOf("Hello A", "Hello B", "Hello C")
+    private val greetings = arrayListOf("Hello A", "Hello B", "Hello C")
 
     private lateinit var observable: Observable<String>
 
@@ -42,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        observable = Observable.fromArray(*greetings)
+        observable = Observable.fromIterable(greetings)
 
         compositeDisposable.add(
             observable.subscribeOn(Schedulers.io())
