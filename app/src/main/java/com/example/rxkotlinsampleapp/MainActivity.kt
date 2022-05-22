@@ -20,6 +20,9 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 *     observable = Observable.create(...)
 *
 * LogOutput -
+* D/MainActivity: create:onNext:student1@gmail.com
+* D/MainActivity: create:onNext:student2@gmail.com
+* D/MainActivity: create:onNext:student3@gmail.com
 * D/MainActivity: onNext: student1@gmail.com
 * D/MainActivity: onNext: student2@gmail.com
 * D/MainActivity: onNext: student3@gmail.com
@@ -57,6 +60,7 @@ class MainActivity : AppCompatActivity() {
             val studentList = getStudentList()
             for (student in studentList) {
                 emitter.onNext(student)
+                Log.d(TAG, "create:onNext:${student.email} ")
             }
             emitter.onComplete()
         }
