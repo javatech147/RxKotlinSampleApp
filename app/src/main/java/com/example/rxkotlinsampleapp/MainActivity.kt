@@ -6,26 +6,23 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.rxkotlinsampleapp.databinding.ActivityMainBinding
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.ObservableEmitter
+import io.reactivex.rxjava3.core.ObservableOnSubscribe
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 /*
-* range() operators only works on Int types.
-* It will emit list items one by one.
-*     observable = Observable.range(0, 10)
-* Here it will emit 10 items starting from 0 means 0 to 9 items.
-* Log Output -
-* D/MainActivity: onNext: 0
-* D/MainActivity: onNext: 1
-* D/MainActivity: onNext: 2
-* D/MainActivity: onNext: 3
-* D/MainActivity: onNext: 4
-* D/MainActivity: onNext: 5
-* D/MainActivity: onNext: 6
-* D/MainActivity: onNext: 7
-* D/MainActivity: onNext: 8
-* D/MainActivity: onNext: 9
+* create() operator
+* If you want to control the items emission by yourself, then you can use create() operator.
+* create() operator provides more control on data emission.
+* We can decide what objects to emit and we can even change the data we are going to emit.
+*     observable = Observable.create(...)
+*
+* LogOutput -
+* D/MainActivity: onNext: student1@gmail.com
+* D/MainActivity: onNext: student2@gmail.com
+* D/MainActivity: onNext: student3@gmail.com
 * D/MainActivity: onComplete:
 * */
 
@@ -34,9 +31,9 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
     private lateinit var binding: ActivityMainBinding
 
-    private lateinit var observable: Observable<Int>
+    private lateinit var observable: Observable<Student>
 
-    private lateinit var disposableObserver: DisposableObserver<Int>
+    private lateinit var disposableObserver: DisposableObserver<Student>
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -45,7 +42,24 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        observable = Observable.range(0, 10)
+//        observable = Observable.create(object : ObservableOnSubscribe<Student> {
+//            override fun subscribe(emitter: ObservableEmitter<Student>) {
+//                val studentList = getStudentList()
+//                for (student in studentList) {
+//                    emitter.onNext(student)
+//                }
+//                emitter.onComplete()
+//            }
+//        })
+
+        // lambda expression for above code.
+        observable = Observable.create { emitter ->
+            val studentList = getStudentList()
+            for (student in studentList) {
+                emitter.onNext(student)
+            }
+            emitter.onComplete()
+        }
 
         compositeDisposable.add(
             observable.subscribeOn(Schedulers.io())
@@ -54,10 +68,10 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun getObserver(): DisposableObserver<Int> {
-        disposableObserver = object : DisposableObserver<Int>() {
-            override fun onNext(item: Int) {
-                Log.d(TAG, "onNext: $item")
+    private fun getObserver(): DisposableObserver<Student> {
+        disposableObserver = object : DisposableObserver<Student>() {
+            override fun onNext(item: Student) {
+                Log.d(TAG, "onNext: ${item.email}")
             }
 
             override fun onError(e: Throwable?) = Unit
@@ -72,5 +86,13 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         compositeDisposable.clear()
         super.onDestroy()
+    }
+
+    private fun getStudentList(): List<Student> {
+        return arrayListOf(
+            Student(10, "Sehwag", "student1@gmail.com"),
+            Student(11, "Dhoni", "student2@gmail.com"),
+            Student(12, "Sachin", "student3@gmail.com")
+        )
     }
 }
