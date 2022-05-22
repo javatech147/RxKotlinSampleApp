@@ -6,26 +6,20 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.rxkotlinsampleapp.databinding.ActivityMainBinding
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.ObservableEmitter
-import io.reactivex.rxjava3.core.ObservableOnSubscribe
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 /*
-* create() operator
-* If you want to control the items emission by yourself, then you can use create() operator.
-* create() operator provides more control on data emission.
-* We can decide what objects to emit and we can even change the data we are going to emit.
-*     observable = Observable.create(...)
+* map() operator
+* Transforms the items emitted by an Observable by applying a function to each item.
+* Use map() operator to transform the items emitted by an Observable by applying a function to each item.
+* We can write functions to transform each of Student object.
 *
 * LogOutput -
-* D/MainActivity: create:onNext:student1@gmail.com
-* D/MainActivity: create:onNext:student2@gmail.com
-* D/MainActivity: create:onNext:student3@gmail.com
-* D/MainActivity: onNext: student1@gmail.com
-* D/MainActivity: onNext: student2@gmail.com
-* D/MainActivity: onNext: student3@gmail.com
+* D/MainActivity: onNext: Email-student1@gmail.com Name: SEHWAG
+* D/MainActivity: onNext: Email-student2@gmail.com Name: DHONI
+* D/MainActivity: onNext: Email-student3@gmail.com Name: SACHIN
 * D/MainActivity: onComplete:
 * */
 
@@ -60,7 +54,6 @@ class MainActivity : AppCompatActivity() {
             val studentList = getStudentList()
             for (student in studentList) {
                 emitter.onNext(student)
-                Log.d(TAG, "create:onNext:${student.email} ")
             }
             emitter.onComplete()
         }
@@ -68,6 +61,9 @@ class MainActivity : AppCompatActivity() {
         compositeDisposable.add(
             observable.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .map { student ->
+                    Student(student.id, student.name.uppercase(), student.email)
+                }
                 .subscribeWith(getObserver())
         )
     }
@@ -75,7 +71,7 @@ class MainActivity : AppCompatActivity() {
     private fun getObserver(): DisposableObserver<Student> {
         disposableObserver = object : DisposableObserver<Student>() {
             override fun onNext(item: Student) {
-                Log.d(TAG, "onNext: ${item.email}")
+                Log.d(TAG, "onNext: Email-${item.email} Name: ${item.name}")
             }
 
             override fun onError(e: Throwable?) = Unit
