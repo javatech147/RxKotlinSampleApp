@@ -5,21 +5,28 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rxkotlinsampleapp.databinding.ActivityMainBinding
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.annotations.NonNull
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
+
+/*
+* just() operators emits the objects once.
+* whether it is list just() operator will emit all list items at once.
+* It will not emit list items one by one.
+* LogOutput - D/MainActivity: onNext: [Hello A, Hello B, Hello C]
+* */
 
 class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
     private lateinit var binding: ActivityMainBinding
 
-    private val helloWorld = "Hello World in RxKotlin"
-    private lateinit var observable: Observable<String>
+    private val helloWorld = arrayListOf("Hello A", "Hello B", "Hello C")
+    private lateinit var observable: Observable<List<String>>
 
-    private lateinit var disposableObserver: DisposableObserver<String>
-    private lateinit var disposableObserver2: DisposableObserver<String>
+    private lateinit var disposableObserver: DisposableObserver<List<String>>
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -29,35 +36,25 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         observable = Observable.just(helloWorld)
-        disposableObserver = object : DisposableObserver<String>() {
-            override fun onNext(str: String?) {
-                Log.d(TAG, "onNext: ")
-                binding.textView.text = str
-            }
-
-            override fun onError(e: Throwable?) = Unit
-
-            override fun onComplete() = Unit
-        }
 
         compositeDisposable.add(
             observable.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(disposableObserver)
+                .subscribeWith(getObserver())
         )
+    }
 
-        disposableObserver2 = object : DisposableObserver<String>() {
-            override fun onNext(str: String?) {
-                binding.textView.text = str
+    private fun getObserver(): DisposableObserver<List<String>> {
+        disposableObserver = object : DisposableObserver<List<String>>() {
+            override fun onNext(@NonNull str: @NonNull List<String>?) {
+                Log.d(TAG, "onNext: $str")
             }
 
             override fun onError(e: Throwable?) = Unit
 
             override fun onComplete() = Unit
         }
-        compositeDisposable.add(
-            observable.subscribeWith(disposableObserver2)
-        )
+        return disposableObserver
     }
 
     override fun onDestroy() {
