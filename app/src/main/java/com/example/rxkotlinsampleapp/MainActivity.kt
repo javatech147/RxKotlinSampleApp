@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rxkotlinsampleapp.databinding.ActivityMainBinding
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.annotations.NonNull
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableObserver
@@ -14,8 +13,16 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 /*
 * just() operators emits the objects once.
 * whether it is list just() operator will emit all list items at once.
-* It will not emit list items one by one.
-* LogOutput - D/MainActivity: onNext: [Hello A, Hello B, Hello C]
+* If you want to emits item one by one, then you need to pass each items separated by comma to the just() operator.
+* Ex - observable = Observable.just("Hello A", "Hello B", "Hello C")
+* In this case it requires - Observable<String>, Disposable<String>
+* If you pass list or iterable to just() operator, it will emits all items at once like below -
+* observable = Observable.just(namesList)
+* If you pass each item to just() operator, it will emit item one by one.
+* Log Output -
+* D/MainActivity: onNext: Hello A
+* D/MainActivity: onNext: Hello B
+* D/MainActivity: onNext: Hello C
 * */
 
 class MainActivity : AppCompatActivity() {
@@ -23,10 +30,9 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
     private lateinit var binding: ActivityMainBinding
 
-    private val helloWorld = arrayListOf("Hello A", "Hello B", "Hello C")
-    private lateinit var observable: Observable<List<String>>
+    private lateinit var observable: Observable<String>
 
-    private lateinit var disposableObserver: DisposableObserver<List<String>>
+    private lateinit var disposableObserver: DisposableObserver<String>
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -35,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        observable = Observable.just(helloWorld)
+        observable = Observable.just("Hello A", "Hello B", "Hello C")
 
         compositeDisposable.add(
             observable.subscribeOn(Schedulers.io())
@@ -44,9 +50,9 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun getObserver(): DisposableObserver<List<String>> {
-        disposableObserver = object : DisposableObserver<List<String>>() {
-            override fun onNext(@NonNull str: @NonNull List<String>?) {
+    private fun getObserver(): DisposableObserver<String> {
+        disposableObserver = object : DisposableObserver<String>() {
+            override fun onNext(str: String?) {
                 Log.d(TAG, "onNext: $str")
             }
 
