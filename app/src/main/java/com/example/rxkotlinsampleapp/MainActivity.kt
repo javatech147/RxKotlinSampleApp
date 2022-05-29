@@ -11,18 +11,12 @@ import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 /*
-* flatMap() operator
-* flatMap() operator behaves very much like map()
-* The difference from map() is that the function it applies returns an Observable.
-* Official doc - transform the items emitted by an Observable into Observables, then
-* flatten the emissions from those into a single Observable.
-*
-* When you want to convert item emitted to another type, prefer map() operator.
-* If you want a non-observable object then you just use map() operator.
-* If you want an Observable object then you use flatMap() operator.
-* flatMap() unwraps the Observable, picks the returned object and wraps it with its own Observable and emits it.
-* i.e. map() takes and item and returns an item, but flatMap() takes an item and returns Observable.
-* In this example - flatMap() operator returns 3 Observable, each emits 2 Student objects.
+* concatMap() operator
+* concatMap() operator is similar to flatMap() operator.
+* flatMap() doesn't preserves the order of the elements.
+* concatMap() cares about the order of the elements.
+* The difference from flatMap() is that concatMap() maintains order.
+* So if you want to maintain order, use concatMap() otherwise use flatMap()
 *
 * LogOutput -
 * D/MainActivity: onNext: Email-student1@gmail.com Name: Sehwag
@@ -77,7 +71,7 @@ class MainActivity : AppCompatActivity() {
 //                }
 
                 // Here flatMap() operator returns 3 Observable, each emits 2 Student objects.
-                .flatMap { student ->
+                .concatMap { student ->
                     val studentNew = Student(student.id, student.name, student.email)
                     Student(student.id, student.name.uppercase(), student.email)
                     Observable.just(student, studentNew)
