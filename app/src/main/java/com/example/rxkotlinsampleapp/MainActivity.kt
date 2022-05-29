@@ -11,15 +11,22 @@ import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 /*
-* map() operator
-* Transforms the items emitted by an Observable by applying a function to each item.
-* Use map() operator to transform the items emitted by an Observable by applying a function to each item.
-* We can write functions to transform each of Student object.
+* flatMap() operator
+* flatMap() operator behaves very much like map()
+* The difference from map() is that the function it applies returns an Observable.
+* Official doc - transform the items emitted by an Observable into Observables, then
+* flatten the emissions from those into a single Observable.
+*
+* When you want to convert item emitted to another type, prefer map() operator.
+* If you want a non-observable object then you just use map() operator.
+* If you want an Observable object then you use flatMap() operator.
+* flatMap() unwraps the Observable, picks the returned object and wraps it with its own Observable and emits it.
+* i.e. map() takes and item and returns an item, but flatMap() takes an item and returns Observable.
 *
 * LogOutput -
-* D/MainActivity: onNext: Email-student1@gmail.com Name: SEHWAG
-* D/MainActivity: onNext: Email-student2@gmail.com Name: DHONI
-* D/MainActivity: onNext: Email-student3@gmail.com Name: SACHIN
+* D/MainActivity: onNext: Email-student1@gmail.com Name: Sehwag
+* D/MainActivity: onNext: Email-student2@gmail.com Name: Dhoni
+* D/MainActivity: onNext: Email-student3@gmail.com Name: Sachin
 * D/MainActivity: onComplete:
 * */
 
@@ -61,8 +68,12 @@ class MainActivity : AppCompatActivity() {
         compositeDisposable.add(
             observable.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .map { student ->
+//                .map { student ->
+//                    Student(student.id, student.name.uppercase(), student.email)
+//                }
+                .flatMap { student ->
                     Student(student.id, student.name.uppercase(), student.email)
+                    Observable.just(student)
                 }
                 .subscribeWith(getObserver())
         )
