@@ -22,10 +22,14 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 * If you want an Observable object then you use flatMap() operator.
 * flatMap() unwraps the Observable, picks the returned object and wraps it with its own Observable and emits it.
 * i.e. map() takes and item and returns an item, but flatMap() takes an item and returns Observable.
+* In this example - flatMap() operator returns 3 Observable, each emits 2 Student objects.
 *
 * LogOutput -
 * D/MainActivity: onNext: Email-student1@gmail.com Name: Sehwag
+* D/MainActivity: onNext: Email-student1@gmail.com Name: Sehwag
 * D/MainActivity: onNext: Email-student2@gmail.com Name: Dhoni
+* D/MainActivity: onNext: Email-student2@gmail.com Name: Dhoni
+* D/MainActivity: onNext: Email-student3@gmail.com Name: Sachin
 * D/MainActivity: onNext: Email-student3@gmail.com Name: Sachin
 * D/MainActivity: onComplete:
 * */
@@ -71,9 +75,12 @@ class MainActivity : AppCompatActivity() {
 //                .map { student ->
 //                    Student(student.id, student.name.uppercase(), student.email)
 //                }
+
+                // Here flatMap() operator returns 3 Observable, each emits 2 Student objects.
                 .flatMap { student ->
+                    val studentNew = Student(student.id, student.name, student.email)
                     Student(student.id, student.name.uppercase(), student.email)
-                    Observable.just(student)
+                    Observable.just(student, studentNew)
                 }
                 .subscribeWith(getObserver())
         )
