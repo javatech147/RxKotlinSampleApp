@@ -11,20 +11,16 @@ import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 /*
-* concatMap() operator
-* concatMap() operator is similar to flatMap() operator.
-* flatMap() doesn't preserves the order of the elements.
-* concatMap() cares about the order of the elements.
-* The difference from flatMap() is that concatMap() maintains order.
-* So if you want to maintain order, use concatMap() otherwise use flatMap()
-*
+* buffer() operator
+* Official doc -
+* periodically gather items emitted by an Observable into bundles and emit these bundles
+* rather than emitting the items one at a time.
 * LogOutput -
-* D/MainActivity: onNext: Email-student1@gmail.com Name: Sehwag
-* D/MainActivity: onNext: Email-student1@gmail.com Name: Sehwag
-* D/MainActivity: onNext: Email-student2@gmail.com Name: Dhoni
-* D/MainActivity: onNext: Email-student2@gmail.com Name: Dhoni
-* D/MainActivity: onNext: Email-student3@gmail.com Name: Sachin
-* D/MainActivity: onNext: Email-student3@gmail.com Name: Sachin
+* D/MainActivity: [0, 1, 2, 3]
+* D/MainActivity: [4, 5, 6, 7]
+* D/MainActivity: [8, 9, 10, 11]
+* D/MainActivity: [12, 13, 14, 15]
+* D/MainActivity: [16, 17, 18, 19]
 * D/MainActivity: onComplete:
 * */
 
@@ -33,9 +29,7 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
     private lateinit var binding: ActivityMainBinding
 
-    private lateinit var observable: Observable<Student>
-
-    private lateinit var disposableObserver: DisposableObserver<Student>
+    private lateinit var observable: Observable<Int>
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -44,67 +38,28 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-//        observable = Observable.create(object : ObservableOnSubscribe<Student> {
-//            override fun subscribe(emitter: ObservableEmitter<Student>) {
-//                val studentList = getStudentList()
-//                for (student in studentList) {
-//                    emitter.onNext(student)
-//                }
-//                emitter.onComplete()
-//            }
-//        })
-
-        // lambda expression for above code.
-        observable = Observable.create { emitter ->
-            val studentList = getStudentList()
-            for (student in studentList) {
-                emitter.onNext(student)
-            }
-            emitter.onComplete()
-        }
+        observable = Observable.range(0, 20)
 
         compositeDisposable.add(
             observable.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-//                .map { student ->
-//                    Student(student.id, student.name.uppercase(), student.email)
-//                }
-
-                // Here flatMap() operator returns 3 Observable, each emits 2 Student objects.
-                .concatMap { student ->
-                    val studentNew = Student(student.id, student.name, student.email)
-                    Student(student.id, student.name.uppercase(), student.email)
-                    Observable.just(student, studentNew)
-                }
+                .buffer(4)
                 .subscribeWith(getObserver())
         )
     }
 
-    private fun getObserver(): DisposableObserver<Student> {
-        disposableObserver = object : DisposableObserver<Student>() {
-            override fun onNext(item: Student) {
-                Log.d(TAG, "onNext: Email-${item.email} Name: ${item.name}")
+    private fun getObserver(): DisposableObserver<MutableList<Int>> {
+        return object : DisposableObserver<MutableList<Int>>() {
+            override fun onNext(t: MutableList<Int>?) {
+                Log.d(TAG, "$t")
             }
 
-            override fun onError(e: Throwable?) = Unit
+            override fun onError(e: Throwable?) {
+            }
 
             override fun onComplete() {
                 Log.d(TAG, "onComplete: ")
             }
         }
-        return disposableObserver
-    }
-
-    override fun onDestroy() {
-        compositeDisposable.clear()
-        super.onDestroy()
-    }
-
-    private fun getStudentList(): List<Student> {
-        return arrayListOf(
-            Student(10, "Sehwag", "student1@gmail.com"),
-            Student(11, "Dhoni", "student2@gmail.com"),
-            Student(12, "Sachin", "student3@gmail.com")
-        )
     }
 }
